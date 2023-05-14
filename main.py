@@ -81,9 +81,10 @@ class Registerrobot():
         print('fill in personal info', step_time, 'cost sum :',   step_time - start_time)    
         
         # ocr get digits
-        images = self.driver.find_element(By.TAG_NAME, 'img')
-        digits_git_path = images.get_attribute('src')
-        self.digits = digits_ocr(digits_git_path)
+        self.images = self.driver.find_element(By.TAG_NAME, 'img')
+        time.sleep(2)
+        self.digits_git_path = self.images.get_attribute('src')
+        self.digits = digits_ocr(self.digits_git_path)
         step_time = datetime.datetime.now()
         print(f'OCR Finish {self.digits}', step_time, 'cost sum :',   step_time - start_time)    
         self.driver.find_element(By.NAME, "pass").send_keys(self.digits)
