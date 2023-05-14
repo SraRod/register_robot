@@ -3,3 +3,4 @@ selenium
 pillow
 pytesseract
 requests
+webdriver-manager
