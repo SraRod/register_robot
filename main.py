@@ -59,7 +59,7 @@ class Registerrobot():
         print('Finish prepare.', end_time, 'cost : ', end_time - start_time)
         
     def fill_in(self, 
-                ID = '1234',#'V200665217', 
+                ID = 'V200665217', 
                 BirthYear = '42', 
                 BirthMonth = '10',
                 BirthDaye = '22'):
