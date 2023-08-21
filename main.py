@@ -3,6 +3,7 @@ import os
 import sys
 import time
 import json
+import yaml
 import argparse
 import requests
 import datetime
@@ -11,11 +12,12 @@ import pytesseract #brew install tesseract
 from PIL import Image
 from selenium import webdriver
 from selenium.webdriver.common.by import By
-from webdriver_manager.chrome import ChromeDriverManager
+# from webdriver_manager.chrome import ChromeDriverManager
+from webdriver_manager.microsoft import EdgeChromiumDriverManager
 from timesync import sync_pc_time
 
 
-chrome_name = ChromeDriverManager().install()
+chrome_name = EdgeChromiumDriverManager().install()
 register_time = None
 
 if os.name == 'nt':
@@ -32,11 +34,11 @@ class Registerrobot():
     def set_method(self, args, path = chrome_name):
         start_time = datetime.datetime.now()
         print('initial browser ... ', start_time)
-        options = webdriver.ChromeOptions()
+        options = webdriver.EdgeOptions()
         options.add_experimental_option("excludeSwitches", ["enable-automation"])
         options.add_experimental_option('useAutomationExtension', False)
         options.add_experimental_option("prefs", {"profile.password_manager_enabled": False, "credentials_enable_service": False})
-        self.driver = webdriver.Chrome(path, chrome_options=options)
+        self.driver = webdriver.Edge(path, options=options)
         self.args = args
         self.vars = {}
         end_time = datetime.datetime.now()
@@ -44,7 +46,7 @@ class Registerrobot():
     
     def teardown_method(self):
         date_str = datetime.datetime.now().strftime("%Y%m%d")
-        self.driver.save_screenshot(f'register_result_{date_str}_{self.args.register_time.replace(":", "_")}.png')
+        self.driver.save_screenshot(f'screenshot/register_result_{date_str}_{self.args.register_time.replace(":", "_")}.png')
         self.driver.quit()
         
     def prepare(self):
@@ -59,10 +61,10 @@ class Registerrobot():
         print('Finish prepare.', end_time, 'cost : ', end_time - start_time)
         
     def fill_in(self, 
-                ID = 'V200665217', 
-                BirthYear = '42', 
-                BirthMonth = '10',
-                BirthDaye = '22'):
+                ID, 
+                BirthYear, 
+                BirthMonth,
+                BirthDaye):
         start_time = datetime.datetime.now()
         self.driver.find_element(By.LINK_TEXT, "傳統醫學科").click() # it usually take 0.9s
         step_time = datetime.datetime.now()
@@ -107,12 +109,12 @@ class Registerrobot():
         print('Find Submit button', step_time, 'cost sum :',   step_time - start_time)
         
     
-    def to_register(self):
+    def to_register(self, suffix = ''):
         # to register
         self.submit.click()
         time.sleep(3)
         date_str = datetime.datetime.now().strftime("%Y%m%d")
-        self.driver.save_screenshot(f'register_result_{date_str}_{self.args.register_time.replace(":", "_")}.png')
+        self.driver.save_screenshot(f'screenshot/register_result_{date_str}_{suffix}_{self.args.register_time.replace(":", "_")}.png')
         
         
         
@@ -122,21 +124,23 @@ if __name__ == '__main__':
     parser.add_argument("ready_time", help="Time to open browser for ready")
     parser.add_argument("register_time", help="Time to register")
     parser.add_argument("--delay", type=float, default=0, help="Delay in seconds before registration")
+    parser.add_argument("--id", type=str, default=0, help="the id info YAML for the registration target")
     args = parser.parse_args()
 
     
     register001 = Registerrobot()
+    id_info = yaml.safe_load(open(args.id))
     
     def ready(t):
         register001.set_method(args = args)
         register001.prepare()
-        register001.fill_in()
+        register001.fill_in(**id_info)
         print(t)
         
     def run(t):
         try:
             time.sleep(args.delay)
-            register001.to_register()
+            register001.to_register(suffix = id_info['ID'])
             date_str = datetime.datetime.now().strftime('%H:%M:%S.%f')
             time.sleep(10)
             print(t, 'local time is', date_str)
@@ -144,6 +148,7 @@ if __name__ == '__main__':
             print(e)
 
         register001.teardown_method()
+
         
     # set for sunday
     schedule.every().sunday.at(args.ready_time).do(ready,f'open browser for ready at {args.ready_time}')
