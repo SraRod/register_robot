@@ -110,6 +110,8 @@ class Registerrobot():
     
     def to_register(self):
         # to register
+        step_time = datetime.datetime.now()
+        print('To register', step_time)
         self.submit.click()
         time.sleep(3)
         date_str = datetime.datetime.now().strftime("%Y%m%d")
@@ -144,6 +146,7 @@ if __name__ == '__main__':
             register001.to_register()
             date_str = datetime.datetime.now().strftime('%H:%M:%S.%f')
             print('finish register', date_str)
+            time.sleep(10)
 
             register001.teardown_method()
         except Exception as e :

@@ -1,15 +1,17 @@
+import os
 import pytz
 import requests
 import datetime
 import subprocess
 
 def sync_pc_time(ntp_server = 'time.apple.com'):
-    try:
-        subprocess.run(["w32tm", "/config", "/syncfromflags:manual", f"/manualpeerlist:{ntp_server}", "/update"])
-        subprocess.run(["w32tm", "/resync", "/nowait"])
-        print("System time synchronized successfully.")
-    except Exception as e:
-        print(f"Error synchronizing system time: {e}")
+    if os.name == 'nt':
+        try:
+            subprocess.run(["w32tm", "/config", "/syncfromflags:manual", f"/manualpeerlist:{ntp_server}", "/update"])
+            subprocess.run(["w32tm", "/resync", "/nowait"])
+            print("System time synchronized successfully.")
+        except Exception as e:
+            print(f"Error synchronizing system time: {e}")
 
 def get_server_time(url):
     try:
