@@ -4,6 +4,7 @@ import sys
 import pytz
 import time
 import json
+import yaml
 import argparse
 import requests
 import datetime
@@ -12,11 +13,12 @@ import pytesseract #brew install tesseract
 from PIL import Image
 from selenium import webdriver
 from selenium.webdriver.common.by import By
-from webdriver_manager.chrome import ChromeDriverManager
+#from webdriver_manager.chrome import ChromeDriverManager
+from webdriver_manager.microsoft import EdgeChromiumDriverManager
 from timesync import sync_pc_time, get_server_time, calculate_time_difference
 
 url = "http://register.vhtt.gov.tw/register/"
-chrome_name = ChromeDriverManager().install()
+chrome_name = EdgeChromiumDriverManager().install()
 register_time = None
 
 if os.name == 'nt':
@@ -33,11 +35,11 @@ class Registerrobot():
     def set_method(self, args, path = chrome_name):
         start_time = datetime.datetime.now()
         print('initial browser ... ', start_time)
-        options = webdriver.ChromeOptions()
+        options = webdriver.EdgeOptions()
         options.add_experimental_option("excludeSwitches", ["enable-automation"])
         options.add_experimental_option('useAutomationExtension', False)
         options.add_experimental_option("prefs", {"profile.password_manager_enabled": False, "credentials_enable_service": False})
-        self.driver = webdriver.Chrome(path, chrome_options=options)
+        self.driver = webdriver.Edge(path, options=options)
         self.args = args
         self.vars = {}
         end_time = datetime.datetime.now()
@@ -45,7 +47,7 @@ class Registerrobot():
     
     def teardown_method(self):
         date_str = datetime.datetime.now().strftime("%Y%m%d")
-        self.driver.save_screenshot(f'register_result_{date_str}_close_{self.args.register_time.replace(":", "_")}.png')
+        self.driver.save_screenshot(f'screenshot/register_result_{date_str}_{self.args.register_time.replace(":", "_")}.png')
         self.driver.quit()
         
     def prepare(self):
@@ -60,16 +62,19 @@ class Registerrobot():
         print('Finish prepare.', end_time, 'cost : ', end_time - start_time)
         
     def fill_in(self, 
-                ID = 'V200665217', 
-                BirthYear = '42', 
-                BirthMonth = '10',
-                BirthDaye = '22'):
+                ID, 
+                BirthYear, 
+                BirthMonth,
+                BirthDaye):
         start_time = datetime.datetime.now()
         self.driver.find_element(By.LINK_TEXT, "傳統醫學科").click() # it usually take 0.9s
         step_time = datetime.datetime.now()
         print('get 傳統醫學科', step_time, 'cost sum :',   step_time - start_time)
         time.sleep(2)
-        self.driver.find_elements(By.TAG_NAME, 'a')[-3].click()
+        clinic_icon = self.driver.find_elements(By.TAG_NAME, 'a')[-3]
+        if clinic_icon.text() != '【預約】':
+            clinic_icon = self.driver.find_elements(By.TAG_NAME, 'a')[-2]
+        clinic_icon.click()
         step_time = datetime.datetime.now()
         print('get 門診', step_time, 'cost sum :',   step_time - start_time)
 
@@ -84,7 +89,7 @@ class Registerrobot():
         dropdown = self.driver.find_element(By.NAME, "patientBirthDate")
         dropdown.find_element(By.XPATH, f"//option[. = '{BirthDaye}']").click()
         step_time = datetime.datetime.now()
-        print('fill in personal info', step_time, 'cost sum :',   step_time - start_time)    
+        print('fill in personal info', step_time, 'cost sum :',   step_time - start_time)
         
         # ocr get digits
         self.images = self.driver.find_element(By.TAG_NAME, 'img')
@@ -108,15 +113,14 @@ class Registerrobot():
         print('Find Submit button', step_time, 'cost sum :',   step_time - start_time)
         
     
-    def to_register(self):
+    def to_register(self, suffix = ''):
         # to register
         step_time = datetime.datetime.now()
         print('To register', step_time)
         self.submit.click()
         time.sleep(3)
         date_str = datetime.datetime.now().strftime("%Y%m%d")
-        self.driver.save_screenshot(f'register_result_{date_str}_wait_{self.args.register_time.replace(":", "_")}.png')
-        
+        self.driver.save_screenshot(f'screenshot/register_result_{date_str}_wait_{self.args.register_time.replace(":", "_")}.png')
         
         
 if __name__ == '__main__':
@@ -125,17 +129,20 @@ if __name__ == '__main__':
     parser.add_argument("ready_time", help="Time to open browser for ready")
     parser.add_argument("register_time", help="Time to register")
     parser.add_argument("--delay", type=float, default=0, help="Delay in seconds before registration")
+    parser.add_argument("--id", type=str, default=0, help="the id info YAML for the registration target")
     args = parser.parse_args()
 
     
     register001 = Registerrobot()
+    id_info = yaml.safe_load(open(args.id))
     
     def ready(t):
         try:
+            print('trying...')
             # prepare
             register001.set_method(args = args)
             register001.prepare()
-            register001.fill_in()
+            register001.fill_in(**id_info)
 
             # estimate time left
             server_time = get_server_time(url)
