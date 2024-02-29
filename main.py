@@ -165,6 +165,10 @@ if __name__ == '__main__':
     # set for wednesday
     schedule.every().wednesday.at(args.ready_time).do(ready,f'open browser for ready at {args.ready_time}')
     schedule.every().wednesday.at(args.register_time).do(run,f'to register {args.register_time}')
+    
+    # set for friday
+    schedule.every().friday.at(args.ready_time).do(ready,f'open browser for ready at {args.ready_time}')
+    schedule.every().friday.at(args.register_time).do(run,f'to register {args.register_time}')
 
 
     
