@@ -46,7 +46,7 @@ class Registerrobot():
     
     def teardown_method(self):
         date_str = datetime.datetime.now().strftime("%Y%m%d")
-        self.driver.save_screenshot(f'screenshot/register_result_{date_str}_{self.args.register_time.replace(":", "_")}.png')
+        self.driver.save_screenshot(f'screenshot/register_result_{date_str}_{suffix}_{self.args.register_time.replace(":", "_")}_teardown.png')
         self.driver.quit()
         
     def prepare(self):
@@ -73,9 +73,10 @@ class Registerrobot():
         clinic_icon = self.driver.find_elements(By.TAG_NAME, 'a')[-3]
         if clinic_icon.text != '【預約】':
             clinic_icon = self.driver.find_elements(By.TAG_NAME, 'a')[-2]
+        step_time_pre = datetime.datetime.now()
         clinic_icon.click()
         step_time = datetime.datetime.now()
-        print('get 門診', step_time, 'cost sum :',   step_time - start_time)
+        print('get 門診', step_time, step_time_pre, 'cost sum :',   step_time - start_time)
 
         # Personal INFO
         ## ID
@@ -110,6 +111,7 @@ class Registerrobot():
         self.submit = self.driver.find_element(By.ID, "Submit")
         step_time = datetime.datetime.now()
         print('Find Submit button', step_time, 'cost sum :',   step_time - start_time)
+        self.driver.save_screenshot(f'screenshot/register_result_{date_str}_{suffix}_{self.args.register_time.replace(":", "_")}_prepare.png')
         
     
     def to_register(self, suffix = ''):
@@ -117,7 +119,7 @@ class Registerrobot():
         self.submit.click()
         time.sleep(3)
         date_str = datetime.datetime.now().strftime("%Y%m%d")
-        self.driver.save_screenshot(f'screenshot/register_result_{date_str}_{suffix}_{self.args.register_time.replace(":", "_")}.png')
+        self.driver.save_screenshot(f'screenshot/register_result_{date_str}_{suffix}_{self.args.register_time.replace(":", "_")}_to_register.png')
         
         
         
