@@ -111,7 +111,9 @@ class Registerrobot():
         self.submit = self.driver.find_element(By.ID, "Submit")
         step_time = datetime.datetime.now()
         print('Find Submit button', step_time, 'cost sum :',   step_time - start_time)
-        self.driver.save_screenshot(f'screenshot/register_result_{date_str}_{suffix}_{self.args.register_time.replace(":", "_")}_prepare.png')
+        date_str = datetime.datetime.now().strftime("%Y%m%d")
+        print(self.args)
+        self.driver.save_screenshot(f'screenshot/register_result_{date_str}_{ID}_{self.args.register_time.replace(":", "_")}_prepare.png')
         
     
     def to_register(self, suffix = ''):
