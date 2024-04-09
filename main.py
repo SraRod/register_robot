@@ -46,7 +46,7 @@ class Registerrobot():
     
     def teardown_method(self):
         date_str = datetime.datetime.now().strftime("%Y%m%d")
-        self.driver.save_screenshot(f'screenshot/register_result_{date_str}_{suffix}_{self.args.register_time.replace(":", "_")}_teardown.png')
+        self.driver.save_screenshot(f'screenshot/register_result_{date_str}_{self.ID}_{self.args.register_time.replace(":", "_")}_teardown.png')
         self.driver.quit()
         
     def prepare(self):
@@ -113,6 +113,7 @@ class Registerrobot():
         print('Find Submit button', step_time, 'cost sum :',   step_time - start_time)
         date_str = datetime.datetime.now().strftime("%Y%m%d")
         print(self.args)
+        self.ID = ID
         self.driver.save_screenshot(f'screenshot/register_result_{date_str}_{ID}_{self.args.register_time.replace(":", "_")}_prepare.png')
         
     
