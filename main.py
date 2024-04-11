@@ -71,7 +71,7 @@ class Registerrobot():
         print('get 傳統醫學科', step_time, 'cost sum :',   step_time - start_time)
         time.sleep(2)
         clinic_icon = self.driver.find_elements(By.TAG_NAME, 'a')[-3]
-        if clinic_icon.text != '【預約】':
+        if self.driver.find_elements(By.TAG_NAME, 'td')[-5].text == '五':
             clinic_icon = self.driver.find_elements(By.TAG_NAME, 'a')[-2]
         step_time_pre = datetime.datetime.now()
         clinic_icon.click()
